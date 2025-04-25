@@ -1,18 +1,36 @@
 from flask import Flask, request, jsonify
 from models import Cliente, Veiculo, OrdemServico, init_db
+from flask_pydantic_spec import FlaskPydanticSpec
+
 app = Flask(__name__)
+
+spec = FlaskPydanticSpec(
+                        'flask',
+                        title='First API - SENAI',
+                        version='1.0.0')
+spec.register(app)
 
 # Inicializa o banco de dados (cria as tabelas se não existirem)
 init_db()
 
+#CLIENTES
 @app.route('/clientes', methods=['GET'])
 def listar_clientes():
+    """
+    Api para listar clientes
+
+    :return:
+    """
     return jsonify([c.serialize() for c in
                     Cliente.query.all()])
 
-#CLIENTES
+
 @app.route('/clientes', methods=['POST'])
 def criar_cliente():
+    """
+    Api para criar cliente
+    :return:
+    """
     data = request.get_json()
     cliente = Cliente(
         nome=data['nome'],
@@ -25,6 +43,11 @@ def criar_cliente():
 
 @app.route('/clientes/<int:id>', methods=['PUT'])
 def atualizar_cliente(id):
+    """
+    Api para atualizar cliente
+    :param id:
+    :return:
+    """
     cliente = Cliente.query.get_or_404(id)
     data = request.json()
     cliente.nome = data('nome', cliente.nome)
@@ -36,6 +59,11 @@ def atualizar_cliente(id):
 
 @app.route('/clientes/<int:id>', methods=['DELETE'])
 def deletar_cliente(id):
+    """
+    Api para deletar cliente
+    :param id:
+    :return:
+    """
     cliente = Client.query.get_or_404(id)
     cliente.delete()
     return jsonify({'message': 'Cliente atualizado com sucesso!'})
@@ -44,10 +72,18 @@ def deletar_cliente(id):
 #VEÍCULOS
 @app.route('/veiculos', methods=['GET'])
 def listar_veiculos():
+    """
+    Api para listar veiculos
+    :return:
+    """
     return jsonify([v.serialize() for v in Veiculo.query.all()])
 
 @app.route('/veiculos', methods=['POST'])
 def criar_veiculo():
+    """
+    Api para criar veiculo
+    :return:
+    """
     data = request.json()
     veiculo = Veiculo(
         cliente_id=data['cliente_id'],
@@ -59,13 +95,23 @@ def criar_veiculo():
     veiculo.save()
     return jsonify(veiculo.serialize()), 201
 
-@app.route('/veiculos/<int:id>', methods=['PUT'])
+@app.route('/veiculos/<int:id>', methods=['GET'])
 def buscar_veiculo(id):
+    """
+    Api para buscar veiculo
+    :param id:
+    :return:
+    """
     veiculo = Veiculo.query.get_or_404(id)
     return jsonify(veiculo.serialize())
 
 @app.route('/veiculos/<int:id>', methods=['PUT'])
 def atualizar_veiculo(id):
+    """
+    Api para atualizar veiculo
+    :param id:
+    :return:
+    """
     veiculo = Veiculo.query.get_or_404(id)
     data = request.json()
     veiculo.cliente_id = data.get['cliente_id'] = data.get('cliente_id', veiculo.cliente_id)
@@ -77,6 +123,11 @@ def atualizar_veiculo(id):
 
 @app.route('/veiculos/<int:id>', methods=['DELETE'])
 def deletar_veiculo(id):
+    """
+    Api para deletar veiculo
+    :param id:
+    :return:
+    """
     veiculo = Veiculo.query.get_or_404(id)
     veiculo.delete()
     return jsonify({'messagem': 'Veículo deletado com sucesso!'})
@@ -85,10 +136,18 @@ def deletar_veiculo(id):
 #ORDENS DE SERVIÇO
 @app.route('/ordens' , methods=['GET'])
 def listar_ordens():
+    """
+    Api para listar ordens
+    :return:
+    """
     return jsonify([o.serialize() for o in OrdemServico.query.all()])
 
 @app.route('/ordens' , methods=['GET'])
 def criar_ordens():
+    """
+
+    :return:
+    """
     data = request.get_json()
     ordens = OrdemServico(
         veiculo_id=data['veiculo_id'],
@@ -97,16 +156,26 @@ def criar_ordens():
         status=data['status'],
         valor_estimada=data['valor_estimada'],
     )
-    ordem.save()
+    ordens.save()
     return jsonify(ordens.serialize()), 201
 
 @app.route('/ordens/<int:id>', methods=['GET'])
 def buscar_ordens(id):
+    """
+    Api para buscar ordens
+    :param id:
+    :return:
+    """
     ordem = OrdemServico.query.get_or_404(id)
     return jsonify(ordem.serialize())
 
 @app.route('/ordens/<int:id>', methods=['PUT'])
 def atualizar_ordens(id):
+    """
+    Api para atualizar ordens
+    :param id:
+    :return:
+    """
     ordem = OrdemServico.query.get_or_404(id)
     data = request.json()
     ordem.veiculo_id = data.get('veiculo_id', ordem.veiculo_id)
@@ -119,6 +188,11 @@ def atualizar_ordens(id):
 
 @app.route('/ordens/<int:id>', methods=['DELETE'])
 def deletar_ordens(id):
+    """
+    Api para deletar ordens
+    :param id:
+    :return:
+    """
     ordem = OrdemServico.query.get_or_404(id)
     ordem.delete()
     return jsonify({'messagem': 'Ordem deletada com sucesso!'})
@@ -126,7 +200,6 @@ def deletar_ordens(id):
 if __name__ == '__main__':
     app.run(debug=True)
 
-
-
-
-
+# POST recebe a informação
+# GET mostra a informação
+# PUT atualiza a informação
