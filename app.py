@@ -175,6 +175,7 @@ def atualizar_ordens(id):
     ordem.save()
     return jsonify(ordem.serialize())
 
+
 @app.route('/ordens/<int:id>', methods=['DELETE'])
 def deletar_ordens(id):
     """
