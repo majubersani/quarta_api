@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from models import Cliente, Veiculo, OrdemServico, init_db
+from models import Cliente, Veiculo, OrdemServico, init_db, db_session
 from flask_pydantic_spec import FlaskPydanticSpec
 
 app = Flask(__name__)
@@ -9,21 +9,20 @@ spec = FlaskPydanticSpec(
                         title='First API - SENAI',
                         version='1.0.0')
 spec.register(app)
-
-# Inicializa o banco de dados (cria as tabelas se não existirem)
 init_db()
 
 #CLIENTES
 @app.route('/clientes', methods=['GET'])
 def listar_clientes():
-    """
-    Api para listar clientes
-
-    :return:
-    """
-    return jsonify([c.serialize() for c in
-                    Cliente.query.all()])
-
+    try:
+        clientes = select(Cliente)
+        result = db_session().execute(clientes).scalars().all()
+        listar_clientes = []
+        for cliente in result:
+            listar_clientes.append({cliente.serialize()})
+            return jsonify({'clientes': listar_clientes})
+    except ValueError as e:
+        return  jsonify({'error': str(e)})
 
 @app.route('/clientes', methods=['POST'])
 def criar_cliente():
@@ -43,15 +42,10 @@ def criar_cliente():
 
 @app.route('/clientes/<int:id>', methods=['PUT'])
 def atualizar_cliente(id):
-    """
-    Api para atualizar cliente
-    :param id:
-    :return:
-    """
-    cliente = Cliente.query.get_or_404(id)
-    data = request.json()
-    cliente.nome = data('nome', cliente.nome)
-    cliente.cpf = data('cpf' , cliente.cpf)
+    cliente = db_session.execute(select(Cliente).where(Cliente.id == id)).scalar()
+    data = request.get_json()
+    cliente.nome = data('nome')
+    cliente.cpf =data('cpf', cliente.cpf)
     cliente.telefone = data('telefone', cliente.telefone)
     cliente.endereco = data('endereco', cliente.endereco)
     cliente.save()
@@ -59,14 +53,9 @@ def atualizar_cliente(id):
 
 @app.route('/clientes/<int:id>', methods=['DELETE'])
 def deletar_cliente(id):
-    """
-    Api para deletar cliente
-    :param id:
-    :return:
-    """
-    cliente = Client.query.get_or_404(id)
+    cliente = db_session.execute(select(Cliente).where(Cliente.id == id)).scalar()
     cliente.delete()
-    return jsonify({'message': 'Cliente atualizado com sucesso!'})
+    return jsonify({'message': 'Cliente deletado'})
 
 
 #VEÍCULOS
@@ -201,5 +190,5 @@ if __name__ == '__main__':
     app.run(debug=True)
 
 # POST recebe a informação
-# GET mostra a informação
-# PUT atualiza a informação
+# GET mostra
+# PUT atualiza

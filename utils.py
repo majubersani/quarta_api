@@ -34,7 +34,6 @@ def deletar_cliente():
     var_cliente = db_session.execute(var_cliente).scalar()
     var_cliente.delete()
 
-
 def inserir_veiculo():
     veiculo = Veiculo(
         cliente_id=int(input('Cliente: ')),
@@ -177,4 +176,4 @@ if __name__ == '__main__':
             break
 
         else:
-            print("ERRO")
+            print("ERROR")
