@@ -1,13 +1,17 @@
 from flask import Flask, request, jsonify
-from models import Cliente, Veiculo, OrdemServico, init_db, db_session
-from flask_pydantic_spec import FlaskPydanticSpec
+from models import Cliente, Veiculo, OrdemServico, db_session
+from utils import init_db
+from flask_pydantic_spec import FlaskPydanticSpec, Request, Response
+from pydantic import BaseModel, Field
 from sqlalchemy import select
+from datetime import datetime
 
 app = Flask(__name__)
+
 spec = FlaskPydanticSpec(
-                        'flask',
-                        title='First API - SENAI',
-                        version='1.0.0')
+    'flask',
+    title='Quarta API - SENAI',
+    version='1.0.0')
 spec.register(app)
 init_db()
 
@@ -24,8 +28,7 @@ def listar_clientes():
     except ValueError as e:
         return  jsonify({'error': str(e)})
 
-
-@ app.route('/criar_cliente', methods=['POST'])
+@app.route('/criar_cliente', methods=['POST'])
 def criar_cliente():
     data = request.get_json()
     cliente = Cliente(
@@ -37,12 +40,13 @@ def criar_cliente():
     cliente.save()
     return jsonify(cliente.serialize()), 201
 
+
 @app.route('/clientes/<int:id>', methods=['PUT'])
 def atualizar_cliente(id):
     cliente = db_session.execute(select(Cliente).where(Cliente.id == id)).scalar()
     data = request.get_json()
     cliente.nome = data('nome')
-    cliente.cpf =data('cpf', cliente.cpf)
+    cliente.cpf = data('cpf', cliente.cpf)
     cliente.telefone = data('telefone', cliente.telefone)
     cliente.endereco = data('endereco', cliente.endereco)
     cliente.save()
@@ -51,11 +55,13 @@ def atualizar_cliente(id):
 @app.route('/clientes/<int:id>', methods=['DELETE'])
 def deletar_cliente(id):
     cliente = db_session.execute(select(Cliente).where(Cliente.id == id)).scalar()
+    if not cliente:
+        return jsonify({'erro': 'Cliente não encontrado'}), 404
     cliente.delete()
-    return jsonify({'message': 'Cliente deletado'})
+    return jsonify({'mensagem': 'Cliente deletado com sucesso!'})
 
 
-# VEÍCULOS
+#VEÍCULOS
 @app.route('/veiculos', methods=['GET'])
 def listar_veiculos():
     try:
@@ -65,6 +71,7 @@ def listar_veiculos():
         return jsonify({'veiculos': listar_veiculos})
     except Exception as e:
         return jsonify({'error': str(e)})
+
 
 @app.route('/veiculos', methods=['POST'])
 def criar_veiculo():
@@ -98,7 +105,6 @@ def atualizar_veiculo(id):
         veiculo = db_session().execute(select(Veiculo).where(Veiculo.id == id)).scalar_one_or_none()
         if not veiculo:
             return jsonify({'message': 'Veículo não encontrado'}), 404
-
         data = request.get_json()
         veiculo.cliente_id = data.get('cliente_id', veiculo.cliente_id)
         veiculo.marca = data.get('marca', veiculo.marca)
@@ -123,7 +129,9 @@ def deletar_veiculo(id):
     except Exception as e:
         return jsonify({'error': str(e)})
 
-# ORDENS DE SERVIÇO
+
+
+#ORDENS DE SERVIÇO
 @app.route('/ordens', methods=['GET'])
 def listar_ordens():
     try:
@@ -190,3 +198,10 @@ def deletar_ordem(id):
         return jsonify({'message': 'Ordem de serviço deletada com sucesso!'})
     except Exception as e:
         return jsonify({'error': str(e)})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+# POST recebe a informação
+# GET mostra
+# PUT atualiza
