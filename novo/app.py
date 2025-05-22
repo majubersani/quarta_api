@@ -30,13 +30,7 @@ def listar_clientes():
                 "nome": "Nome do Cliente",
                 "cpf": "123.456.789-00",
                 "telefone": "(11) 98765-4321",
-                "endereco": "Rua Exemplo, 123"
-
-                "id": 2,
-                "nome": "Outro Cliente",
-                "cpf": "987.654.321-11",
-                "telefone": "(21) 12345-6789",
-                "endereco": "Avenida Teste, 456"
+                "endereco": "Rua Exemplo, 123"'
             }
 
     ### Erros Possíveis (JSON):
